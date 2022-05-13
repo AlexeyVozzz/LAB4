@@ -1,0 +1,134 @@
+"""С клавиатуры вводится два числа K и N. Квадратная матрица А(N,N), состоящая из 4-х равных по размерам подматриц,
+B,C,D,E заполняется случайным образом целыми числами в интервале [-10,10]. Формируется матрица F следующим образом:
+если в Е количество чисел, больших К в четных столбцах в области 1 больше,
+чем произведение чисел в нечетных строках в области 4, то поменять в Е симметрично области 2 и 3 местами, 
+иначе С и В поменять местами несимметрично. При этом матрица А не меняется. После чего вычисляется выражение:
+ (К*(A*F))* F T. Выводятся по мере формирования А, F и все матричные операции последовательно.
+"""
+
+import random
+import time
+
+
+def print_matrix(M, matr_name, tt):
+    print("Матрица " + matr_name + " промежуточное время = " + str(tt) + " seconds.")
+    for i in M:  # делаем перебор всех строк матрицы
+        for j in i:  # перебираем все элементы в строке
+            print("%5d" % j, end=' ')
+        print()
+
+
+print("\n-----Результат работы программы-------")
+try:
+    row_q = int(input("Введите количество строк (столбцов) квадратной матрицы в интервале от 6 до 100:"))
+    while row_q < 6 or row_q > 100:
+        row_q = int(input("\nВы ввели неверное число"
+                          "\nВведите количество строк (столбцов) квадратной матрицы в интервале от 6 до 100:"))
+    K = int(input("Введите число К="))
+    while K < 0:
+        K = int(input("\nВы ввели неверное число"
+                      "\nВведите положительное число."))
+    start = time.time()
+    A, F, AF, FT = [], [], [], []  # Задаем матрицы
+    for i in range(row_q):
+        A.append([0] * row_q)
+        F.append([0] * row_q)
+        AF.append([0] * row_q)
+        FT.append([0] * row_q)
+    for i in range(row_q):  # Заполняем матрицу А
+        for j in range(row_q):
+            A[i][j] = random.randint(-10, 10)
+    time_next = time.time()
+    print_matrix(F, "F", time_next - start)
+    time_prev = time_next
+    time_next = time.time()
+    print_matrix(A, "A", time_next - time_prev)
+    for i in range(row_q):  # F
+        for j in range(row_q):
+            F[i][j] = A[i][j]
+    time_prev = time_next
+    time_next = time.time()
+    print_matrix(F, "F", time_next - time_prev)
+
+    E = []  # Задаем матрицу Е
+    size = row_q // 2
+    for i in range(size):
+        E.append([0] * size)
+
+    for i in range(size):  # Формируем подматрицу E
+        for j in range(size):
+            E[i][j] = F[i][j]
+    time_prev = time_next
+    time_next = time.time()
+    print_matrix(E, "E", time_next - time_prev)
+
+    numbers_greater_than_К = 0
+    multiplication_in_4 = 1
+    for i in range(size):  # Обрабатываем подматрицу E
+        for j in range(size):
+            if j > i and j % 2 == 0 and i < size - 1 - j and E[i][j] > K:
+                numbers_greater_than_К += 1
+            if i > j and i % 2 != 0 and j < size - 1 - i:
+                multiplication_in_4 = multiplication_in_4 * E[i][j]
+
+
+
+    if numbers_greater_than_К > multiplication_in_4:
+        for i in range(size):  # меняем подматрицу E
+            for j in range(size):
+                if (i < j) and (i > size - 1 - j):
+                    E[i][j], E[j][i] = E[j][i], E[i][j]
+
+        print_matrix(E, "E", time_next - time_prev)
+        for i in range(size):  # Формируем матрицу F
+            for j in range(size):
+                F[i][j] = E[i][j]
+        print_matrix(F, "F!", time_next - time_prev)
+    else:
+        for i in range(row_q // 2):
+            for j in range(row_q // 2):
+                F[i][row_q // 2 + row_q % 2 + i], F[row_q // 2 + row_q % 2 + i][row_q // 2 + row_q % 2 + j] \
+                    = F[row_q // 2 + row_q % 2 + i][row_q // 2 + row_q % 2 + j], F[i][row_q // 2 + row_q % 2 + i]
+    time_prev = time_next
+    time_next = time.time()
+    print_matrix(F, "F", time_next - time_prev)
+    print_matrix(A, "A", 0)
+
+    for i in range(row_q):  # A*F
+        for j in range(row_q):
+            s = 0
+            for m in range(row_q):
+                s = s + A[i][m] * F[m][j]
+            AF[i][j] = s
+    time_prev = time_next
+    time_next = time.time()
+    print_matrix(A, "A*F", time_next - time_prev)
+
+    for i in range(row_q):  # K*(A*F)
+        for j in range(row_q):
+            AF[i][j] = K * AF[i][j]
+    time_prev = time_next
+    time_next = time.time()
+    print_matrix(AF, "K*A*F", time_next - time_prev)
+
+    for i in range(row_q):  # F^T
+        for j in range(i, row_q, 1):
+            FT[i][j], FT[j][i] = F[j][i], F[i][j]
+    time_prev = time_next
+    time_next = time.time()
+    print_matrix(FT, "A^T", time_next - time_prev)
+
+    for i in range(row_q):  # (K*(A*F)*(F^T)
+        for j in range(row_q):
+            FT[i][j] = FT[i][j] * AF[i][j]
+    time_prev = time_next
+    time_next = time.time()
+    print_matrix(FT, "(K*(A*F)*(F^T)", time_next - time_prev)
+
+    finish = time.time()
+    result = finish - start
+    print("Program time: " + str(result) + " seconds.")
+
+
+except ValueError:
+    print("\nЭто не целое число. Введите число без сторонних символов.")
