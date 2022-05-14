@@ -29,12 +29,13 @@ try:
         K = int(input("\nВы ввели неверное число"
                       "\nВведите положительное число."))
     start = time.time()
-    A, F, AF, FT = [], [], [], []  # Задаем матрицы
+    A, F, AF, FT, Fin = [], [], [], [], Fin  # Задаем матрицы
     for i in range(row_q):
         A.append([0] * row_q)
         F.append([0] * row_q)
         AF.append([0] * row_q)
         FT.append([0] * row_q)
+        Fin.append([0] * row_q)
     for i in range(row_q):  # Заполняем матрицу А
         for j in range(row_q):
             A[i][j] = random.randint(-10, 10)
@@ -102,7 +103,7 @@ try:
             AF[i][j] = s
     time_prev = time_next
     time_next = time.time()
-    print_matrix(A, "A*F", time_next - time_prev)
+    print_matrix(AF, "A*F", time_next - time_prev)
 
     for i in range(row_q):  # K*(A*F)
         for j in range(row_q):
@@ -117,13 +118,16 @@ try:
     time_prev = time_next
     time_next = time.time()
     print_matrix(FT, "A^T", time_next - time_prev)
-
+    
     for i in range(row_q):  # (K*(A*F)*(F^T)
         for j in range(row_q):
-            FT[i][j] = FT[i][j] * AF[i][j]
+            s = 0
+            for m in range(row_q):
+                s = s + FT[i][j] * AF[i][j]
+            Fin[i][j] = s
     time_prev = time_next
     time_next = time.time()
-    print_matrix(FT, "(K*(A*F)*(F^T)", time_next - time_prev)
+    print_matrix(Fin, "(K*(A*F)*(F^T)", time_next - time_prev)
 
     finish = time.time()
     result = finish - start
